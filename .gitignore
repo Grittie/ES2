@@ -52,5 +52,5 @@ Mkfile.old
 dkms.conf
 
 # Clion specific files
-.DS_Store
-.idea
+*.DS_Store
+*.idea
