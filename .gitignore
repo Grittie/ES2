@@ -56,4 +56,4 @@ dkms.conf
 *.idea
 
 # My own specified folders
-Exercises/output/
+**/output/
