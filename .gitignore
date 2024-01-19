@@ -54,3 +54,6 @@ dkms.conf
 # Clion specific files
 *.DS_Store
 *.idea
+
+# My own specified folders
+Exercises/output/
