@@ -1,0 +1,13 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "C/C++ Runner: Debug Session",
+      "type": "lldb",
+      "request": "launch",
+      "args": [],
+      "cwd": "/Users/grittie/Workspace/University/Y2/S3/ES2/Excercises",
+      "program": "/Users/grittie/Workspace/University/Y2/S3/ES2/Excercises/build/Debug/outDebug"
+    }
+  ]
+}
