@@ -233,9 +233,10 @@
 /* Interrupt Service Routine for the CTRL-Z signal */
 void interruptServiceRoutine(int s) {
 
-
-
 }
+
+/* Declaring functions */
+int readProximitySensor(void);
 
 
 /* Main program */
@@ -262,17 +263,17 @@ int main(void) {
     /* Read the measurement from the proximity sensor */
     readProximitySensor();
 
-    /* Update the status of the missile */
-    determineMissileStatus();
+    // /* Update the status of the missile */
+    // determineMissileStatus();
 
-    /* Notify the user about the missile */
-    setMissileIndicator();
+    // /* Notify the user about the missile */
+    // setMissileIndicator();
 
-    /* Attempt to destroy the missile */
-    fireMissileInterceptor();
+    // /* Attempt to destroy the missile */
+    // fireMissileInterceptor();
 
-    /* Reset the system */
-    confirmInterception();
+    // /* Reset the system */
+    // confirmInterception();
 
   }
 
@@ -296,35 +297,39 @@ int main(void) {
  *
  ******************************************************
  */
+
 readProximitySensor() {
+  int missileDistance;
 
+  printf("Enter distance of the missle: \n");
+  scanf("%d", &missileDistance);
 
-
+  printf("Distance of the missle is: %d", missileDistance);
 }
 
-determineMissileStatus() {
+// determineMissileStatus() {
 
 
 
-}
+// }
 
-setMissileIndicator() {
-
-
-
-}
-
-fireMissileInterceptor() {
+// setMissileIndicator() {
 
 
 
-}
+// }
 
-confirmInterception() {
+// fireMissileInterceptor() {
 
 
 
-}
+// }
+
+// confirmInterception() {
+
+
+
+// }
 
 /* [] END OF FILE */
 

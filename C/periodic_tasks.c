@@ -15,6 +15,7 @@
  * by the Free Software Foundation.
  */
 #include "periodic_tasks.h"
+#include <time.h>
 
 
 /// @brief  Add time in nanoseconds
