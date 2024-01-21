@@ -246,6 +246,7 @@ void interruptServiceRoutine(int s) {
 int readProximitySensor(void);
 int determineMissileStatus(int distance);
 void setMissileIndicator(int missileStatus);
+void fireMissileInterceptor();
 
 
 /* Main program */
@@ -279,7 +280,12 @@ int main(void) {
     setMissileIndicator(missileStatus);
 
     // /* Attempt to destroy the missile */
-    // fireMissileInterceptor();
+    printf("IF THESE VALUES ARE NOT THE SAME I WILL BE KILLING MYSELF\n"); // PLEASE FIGURE OUT WHY THESE ARE NOT THE SAME I CANT FIGURE IT OUT RN IM TIRED
+    printf("DEBUG: %d\n", missileStatus);
+    printf("DEBUG: %d\n", INTERCEPTABLE);
+    if(missileStatus == INTERCEPTABLE) {
+      fireMissileInterceptor();
+    }
 
     // /* Reset the system */
     // confirmInterception();
@@ -348,6 +354,7 @@ int readProximitySensor(void) {
   return missileDistance;
 }
 
+
 /**
  * Function: determineMissileStatus
  * --------------------------------
@@ -387,6 +394,8 @@ int determineMissileStatus(int distance) {
  * @param int missileStatus: The status of the missile system (undetectable, detectable, interceptable).
  */
 
+#define FIRE_MISSILE 1
+
 void setMissileIndicator(int missileStatus) {
     switch (missileStatus) {
         case UNDETECTABLE:
@@ -403,11 +412,24 @@ void setMissileIndicator(int missileStatus) {
     }
 }
 
-// fireMissileInterceptor() {
 
+/**
+ * Function: fireMissileInterceptor
+ * -------------------------------
+ * Simulates the firing of interception missiles and determines whether
+ * the missile has been intercepted based on a random process.
+ */
+void fireMissileInterceptor() {
+  printf("ALARM: FIRING INTERCEPTION MISSILES\n");
 
+  uint8_t randomResult = rand() % 2;
 
-// }
+  if (randomResult == 1){
+    printf("SUCCESS! THE MISSILE HAS BEEN INTERCEPTED!\n");
+  } else {
+    printf("ALARM! THE MISSILE HAS NOT BEEN INTERCEPTED!\n");
+  }
+}
 
 // confirmInterception() {
 
