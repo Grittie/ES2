@@ -59,7 +59,9 @@
  *     and read the distance from the keyboard. Define your own signature for
  *     the function, explaining how does it help you in your proposed solution.
  *
- *       Explanation:
+ *       Explanation: I ahve designed the read promixity sensor to be prepared for overloads. Utilizing a do-while
+ *                    to repeatedly promt the user until a valid integer is inputted. This way it handles both integers 
+ *                    outside of the pre determined scope and invalid inputs like strings.
  *
  *
  *  2: Define two thereshold values to setup the distance-dependent status.
@@ -228,6 +230,7 @@
  ***********************************************************************************/
 
 #include "periodic_tasks.h"
+#include <stdio.h>
 
 
 /* Interrupt Service Routine for the CTRL-Z signal */
@@ -237,7 +240,6 @@ void interruptServiceRoutine(int s) {
 
 /* Declaring functions */
 int readProximitySensor(void);
-
 
 /* Main program */
 int main(void) {
@@ -298,13 +300,46 @@ int main(void) {
  ******************************************************
  */
 
-readProximitySensor() {
+
+/**
+ * Function: readProximitySensor
+ * ------------------------------
+ * Asks the user to enter the distance of a missile for the promixity sensor.
+ * The function continues to prompt until a valid integer within the allowed range (set by the define MAX_ALLOWED_DISTANCE is provided. 
+ * It also handles invalid inputs by informing the user and clearing the input buffer. 
+ *
+ * @return int: The valid distance entered by the user.
+ */
+
+// The maximum distance threshold
+#define MAX_ALLOWED_DISTANCE 1000000
+
+int readProximitySensor(void) {
   int missileDistance;
 
-  printf("Enter distance of the missle: \n");
-  scanf("%d", &missileDistance);
+  do {
+    // Ask the user to enter the distance of the missile
+    printf("Enter distance of the missile: ");
 
-  printf("Distance of the missle is: %d", missileDistance);
+    // Read the entered distance from the user
+    if (scanf("%d", &missileDistance) != 1) {
+      // If the user fails to input a integer, let them know
+      printf("Invalid input. Please provide a valid integer.\n");
+      // Clear the input buffer
+      while (getchar() != '\n');
+      // Set the distance to 0 to request missile distance again
+      missileDistance = 0;
+    }
+
+    if (missileDistance > MAX_ALLOWED_DISTANCE) {
+      printf("Entered distance exceeds maximum allowed distance. Please input distance again.\n");
+    }
+  } while (missileDistance > MAX_ALLOWED_DISTANCE || missileDistance <= 0);
+
+  // Print the entered distance
+  printf("\nDistance of the missile is: %d\n", missileDistance);
+
+  return missileDistance;
 }
 
 // determineMissileStatus() {

@@ -1,0 +1,30 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/grit/workspace/ES2/C/main.c
+periodic_tasks.h
+/home/grit/workspace/ES2/C/periodic_tasks.h
+stdio.h
+-
+
+/home/grit/workspace/ES2/C/periodic_tasks.h
+utilities.h
+/home/grit/workspace/ES2/C/utilities.h
+
+/home/grit/workspace/ES2/C/utilities.h
+time.h
+-
+stdio.h
+-
+stdint.h
+-
+stdlib.h
+-
+signal.h
+-
+

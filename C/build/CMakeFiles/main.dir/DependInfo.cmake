@@ -1,16 +1,17 @@
-
-# Consider dependencies only in project.
-set(CMAKE_DEPENDS_IN_PROJECT_ONLY OFF)
-
 # The set of languages for which implicit dependencies are needed:
 set(CMAKE_DEPENDS_LANGUAGES
+  "C"
   )
+# The set of files for implicit dependencies of each language:
+set(CMAKE_DEPENDS_CHECK_C
+  "/home/grit/workspace/ES2/C/main.c" "/home/grit/workspace/ES2/C/build/CMakeFiles/main.dir/main.c.o"
+  "/home/grit/workspace/ES2/C/periodic_tasks.c" "/home/grit/workspace/ES2/C/build/CMakeFiles/main.dir/periodic_tasks.c.o"
+  "/home/grit/workspace/ES2/C/utilities.c" "/home/grit/workspace/ES2/C/build/CMakeFiles/main.dir/utilities.c.o"
+  )
+set(CMAKE_C_COMPILER_ID "GNU")
 
-# The set of dependency files which are needed:
-set(CMAKE_DEPENDS_DEPENDENCY_FILES
-  "/Users/grittie/Workspace/University/Y2/S3/ES2/C/main.c" "CMakeFiles/main.dir/main.c.o" "gcc" "CMakeFiles/main.dir/main.c.o.d"
-  "/Users/grittie/Workspace/University/Y2/S3/ES2/C/periodic_tasks.c" "CMakeFiles/main.dir/periodic_tasks.c.o" "gcc" "CMakeFiles/main.dir/periodic_tasks.c.o.d"
-  "/Users/grittie/Workspace/University/Y2/S3/ES2/C/utilities.c" "CMakeFiles/main.dir/utilities.c.o" "gcc" "CMakeFiles/main.dir/utilities.c.o.d"
+# The include file search paths:
+set(CMAKE_C_TARGET_INCLUDE_PATH
   )
 
 # Targets to which this target links.

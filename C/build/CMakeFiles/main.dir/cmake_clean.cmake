@@ -1,10 +1,7 @@
 file(REMOVE_RECURSE
   "CMakeFiles/main.dir/main.c.o"
-  "CMakeFiles/main.dir/main.c.o.d"
   "CMakeFiles/main.dir/periodic_tasks.c.o"
-  "CMakeFiles/main.dir/periodic_tasks.c.o.d"
   "CMakeFiles/main.dir/utilities.c.o"
-  "CMakeFiles/main.dir/utilities.c.o.d"
   "main"
   "main.pdb"
 )
