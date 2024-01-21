@@ -59,7 +59,7 @@
  *     and read the distance from the keyboard. Define your own signature for
  *     the function, explaining how does it help you in your proposed solution.
  *
- *       Explanation: I ahve designed the read promixity sensor to be prepared for overloads. Utilizing a do-while
+ *       Explanation: I have designed the read promixity sensor to be prepared for overloads. Utilizing a do-while
  *                    to repeatedly promt the user until a valid integer is inputted. This way it handles both integers 
  *                    outside of the pre determined scope and invalid inputs like strings.
  *
@@ -77,7 +77,10 @@
  *     macros. Define your own signature for the function, explaining how does
  *     it help you in your proposed solution.
  *
- *       Explanation:
+ *       Explanation: For this function I have set up a few macros. To begin I have defined UNDETECTABLE, DETECTABLE and INTERCEPTABLE
+ *                    as 1, 2 and 3. This makes the setMissleIndicator function more readable because I can return these macros instead of integers, 
+ *                    removing magic numbers and making my code more readable. I have also set a macro for the thresholds for the INTERCEPTABLE and DETECTABLE status.
+ *                    The function simply checks if the distance given from the proximity sensor is below these thresholds and then returns the correct status.
  *
  *
  *  4: Complete the code of the function setMissileIndicator() such that the
@@ -85,7 +88,8 @@
  *     Define your own signature for the function, explaining how does it help
  *     you in your proposed solution.
  *
- *       Explanation:
+ *       Explanation: In this function I give the missleStatus as an arguement, these are the defined macros in the previous function.
+ *                    The switch case simply checks what status out of the 3 these are and prints the notification accordingly.
  *
  *
  * After the missile has been detected and it is in interception range, you can
@@ -240,6 +244,9 @@ void interruptServiceRoutine(int s) {
 
 /* Declaring functions */
 int readProximitySensor(void);
+int determineMissileStatus(int distance);
+void setMissileIndicator(int missileStatus);
+
 
 /* Main program */
 int main(void) {
@@ -263,20 +270,19 @@ int main(void) {
     wait_next_periodic_activation(task);
 
     /* Read the measurement from the proximity sensor */
-    readProximitySensor();
+    int distance = readProximitySensor();
 
     // /* Update the status of the missile */
-    // determineMissileStatus();
+    int missileStatus = determineMissileStatus(distance);
 
-    // /* Notify the user about the missile */
-    // setMissileIndicator();
+    /* Notify the user about the missile */
+    setMissileIndicator(missileStatus);
 
     // /* Attempt to destroy the missile */
     // fireMissileInterceptor();
 
     // /* Reset the system */
     // confirmInterception();
-
   }
 
   /* Release the allocated memory */
@@ -319,7 +325,7 @@ int readProximitySensor(void) {
 
   do {
     // Ask the user to enter the distance of the missile
-    printf("Enter distance of the missile: ");
+    printf("\nEnter distance of the missile: ");
 
     // Read the entered distance from the user
     if (scanf("%d", &missileDistance) != 1) {
@@ -342,17 +348,60 @@ int readProximitySensor(void) {
   return missileDistance;
 }
 
-// determineMissileStatus() {
+/**
+ * Function: determineMissileStatus
+ * --------------------------------
+ * Determines the status of the missile based on the provided distance.
+ * The function uses predefined macros for threshold values.
+ *
+ * @param int distance: The distance of the missile from the proximity sensor.
+ * @return int: The status of the missile (UNDETECTABLE, DETECTABLE, INTERCEPTABLE).
+ */
+
+// Define symbolic constants for missile status
+#define UNDETECTABLE 1
+#define DETECTABLE 2
+#define INTERCEPTABLE 3
+
+// Maximum distance for the missle to be interceptable and detectable
+#define INTERCEPTABLE_THRESHOLD 100
+#define DETECTABLE_THRESHOLD 1000
+
+int determineMissileStatus(int distance) {
+  if (distance > DETECTABLE_THRESHOLD) {
+    return UNDETECTABLE;
+  } else if (distance > INTERCEPTABLE_THRESHOLD) {
+    return DETECTABLE;
+  } else {
+    return INTERCEPTABLE;
+  }
+}
 
 
+/**
+ * Function: setMissileIndicator
+ * ------------------------------
+ * Sets the missile indicator based on the status of the missile system.
+ * The function takes the status as a parameter and prints an alarm message accordingly.
+ *
+ * @param int missileStatus: The status of the missile system (undetectable, detectable, interceptable).
+ */
 
-// }
-
-// setMissileIndicator() {
-
-
-
-// }
+void setMissileIndicator(int missileStatus) {
+    switch (missileStatus) {
+        case UNDETECTABLE:
+            printf("ALARM: Missile is undetectable. Activate anti-missile shield!\n");
+            break;
+        case DETECTABLE:
+            printf("ALARM: Missile is detectable. Prepare for interception!\n");
+            break;
+        case INTERCEPTABLE:
+            printf("ALARM: Missile is interceptable. Launch interception missiles!\n");
+            break;
+        default:
+            printf("ALARM: Unknown missile status. Take appropriate action!\n");
+    }
+}
 
 // fireMissileInterceptor() {
 
