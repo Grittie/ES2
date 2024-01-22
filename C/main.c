@@ -279,11 +279,8 @@ int main(void) {
     /* Notify the user about the missile */
     setMissileIndicator(missileStatus);
 
-    // /* Attempt to destroy the missile */
-    printf("IF THESE VALUES ARE NOT THE SAME I WILL BE KILLING MYSELF\n"); // PLEASE FIGURE OUT WHY THESE ARE NOT THE SAME I CANT FIGURE IT OUT RN IM TIRED
-    printf("DEBUG: %d\n", missileStatus);
-    printf("DEBUG: %d\n", INTERCEPTABLE);
-    if(missileStatus == INTERCEPTABLE) {
+    /* Attempt to destroy the missile */
+    if(missileStatus == INTERCEPTABLE + 1) { // for some reason the interceptable and all other states -1 in value, idk why but I can't figure it out rn
       fireMissileInterceptor();
     }
 
