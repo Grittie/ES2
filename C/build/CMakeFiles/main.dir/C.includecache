@@ -11,6 +11,12 @@ periodic_tasks.h
 /home/grit/workspace/ES2/C/periodic_tasks.h
 stdio.h
 -
+stdlib.h
+-
+stdint.h
+-
+signal.h
+-
 
 /home/grit/workspace/ES2/C/periodic_tasks.h
 utilities.h

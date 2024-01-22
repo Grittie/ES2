@@ -107,7 +107,9 @@
  *     signature for the function, explaining how does it help you in your
  *     proposed solution.
  *
- *       Explanation:
+ *       Explanation: for the fireMissileInterceptor() function I simply create a uint8_t variable called randomResult
+ *                    that calls the rand() and modulos by 2 to either get a random 1 or 2 result. The result decided if
+ *                    the missile is intercepted or not.
  *
  *
  *  6: In the cases in which the missile was successfully destroyed, then your
@@ -118,7 +120,8 @@
  *     solve this issue. Define your own signature for the function, explaining
  *     how does it help you in your proposed solution.
  *
- *       Explanation:
+ *       Explanation: The confirmInterceptionFunctiong gets a integer from fireMissleInterceptor that tells it if the missile
+ *                    was intercepted or not, I can now implement further logic into this function,
  *
  *
  * Assuming the worst-case scenario, the missile could not be destroyed and it
@@ -133,7 +136,8 @@
  *     implement this code as you wish (add the required code in this project).
  *     Additionally, explain your solution here.
  *
- *       Explanation:
+ *       Explanation: I have added prints to the interruptServiceRoutine to showcase the urgancy of the situation and then I exit the program
+ *                    by calling the exit(EXIT_FAILURE) function. 
  *
  *
  *  8: Update the code to ensure that the sensor reading (the distance that you
@@ -235,18 +239,31 @@
 
 #include "periodic_tasks.h"
 #include <stdio.h>
+#include <stdlib.h>
+#include <stdint.h>
+#include <signal.h>
 
 
 /* Interrupt Service Routine for the CTRL-Z signal */
 void interruptServiceRoutine(int s) {
+  // Trigger the evacuation alarm
+  printf("\nEVACUATION ALARM: Seek shelter immediately! Missile impact imminent!\n");
 
+  // Print the message five times for emphasis
+  for (int i = 0; i < 5; ++i) {
+    printf("EVACUATE!\n");
+  }
+
+  // Terminate the program
+  exit(EXIT_FAILURE);
 }
 
 /* Declaring functions */
 int readProximitySensor(void);
 int determineMissileStatus(int distance);
 void setMissileIndicator(int missileStatus);
-void fireMissileInterceptor();
+int  fireMissileInterceptor();
+void confirmInterception(int interceptionResult);
 
 
 /* Main program */
@@ -281,11 +298,10 @@ int main(void) {
 
     /* Attempt to destroy the missile */
     if(missileStatus == INTERCEPTABLE + 1) { // for some reason the interceptable and all other states -1 in value, idk why but I can't figure it out rn
-      fireMissileInterceptor();
+      int interceptionResult = fireMissileInterceptor();
+      /* Reset the system */
+      confirmInterception(interceptionResult);
     }
-
-    // /* Reset the system */
-    // confirmInterception();
   }
 
   /* Release the allocated memory */
@@ -415,24 +431,38 @@ void setMissileIndicator(int missileStatus) {
  * -------------------------------
  * Simulates the firing of interception missiles and determines whether
  * the missile has been intercepted based on a random process.
+ * @return int: 1 if the missile was intercepted, 0 otherwise.
  */
-void fireMissileInterceptor() {
+int fireMissileInterceptor() {
   printf("ALARM: FIRING INTERCEPTION MISSILES\n");
 
   uint8_t randomResult = rand() % 2;
 
-  if (randomResult == 1){
+  if (randomResult == 1) {
     printf("SUCCESS! THE MISSILE HAS BEEN INTERCEPTED!\n");
+    return 1;
   } else {
     printf("ALARM! THE MISSILE HAS NOT BEEN INTERCEPTED!\n");
+    return 0;
   }
 }
 
-// confirmInterception() {
-
-
-
-// }
+/**
+ * Function: confirmInterception
+ * ------------------------------
+ * Confirms the interception result and takes appropriate actions.
+ * If the missile was successfully intercepted, reset the system.
+ * If the missile was not intercepted, alert the user for evacuation.
+ */
+void confirmInterception(int interceptionResult) {
+  if (interceptionResult) {
+    printf("SUCCESS! The missile has been intercepted. Resetting the system.\n");
+    // Additional actions to reset the system can be added here.
+  } else {
+    printf("ALERT: The missile has not been intercepted. Fire the alarm for evacuation!\n");
+    // Additional actions for evacuation can be added here.
+  }
+}
 
 /* [] END OF FILE */
 
