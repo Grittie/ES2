@@ -445,7 +445,8 @@ int fireMissileInterceptor() {
  * ------------------------------
  * Confirms the interception result and takes appropriate actions.
  * If the missile was successfully intercepted, reset the system.
- * If the missile was not intercepted, alert the user for evacuation.
+ * If the missile was not intercepted, alert the user for evacuation. 
+ * and wait for the user to interupt the program.
  */
 void confirmInterception(int interceptionResult, struct Missile *missile) {
     if (interceptionResult) {
