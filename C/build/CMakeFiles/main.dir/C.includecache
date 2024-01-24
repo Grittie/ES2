@@ -19,6 +19,8 @@ signal.h
 -
 unistd.h
 -
+getopt.h
+-
 
 /home/grit/workspace/ES2/C/periodic_tasks.h
 utilities.h

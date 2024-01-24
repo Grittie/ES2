@@ -244,6 +244,7 @@
 #include <stdint.h>
 #include <signal.h>
 #include <unistd.h>
+#include <getopt.h>
 
 // Define a structure for the missile
 struct Missile {
@@ -273,10 +274,34 @@ int determineMissileStatus(int distance);
 void setMissileIndicator(int missileStatus);
 int fireMissileInterceptor();
 void confirmInterception(int interceptionResult, struct Missile *missile);
+int extractDecisionBits();
+
+// Global variables to store command line arguments
+int bitsOption = 0;      // 0 for default implementation, 1 for alternative
+int multipleOption = 0;  // 0 for single missile, 1 for multiple missiles
 
 /* Main program */
-int main(void) {
+int main(int argc, char *argv[]) {
   struct periodic_task *task;
+
+  // Parse command line arguments
+  int opt;
+  while ((opt = getopt(argc, argv, "bm")) != -1) {
+    switch (opt) {
+      case 'b':
+        bitsOption = 1;
+        printf("b option has been selected");
+        break;
+      case 'm':
+        printf("m option has been selected");
+        multipleOption = 1;
+        break;
+      default:
+        fprintf(stderr, "Usage: %s [-b] [-m]\n", argv[0]);
+        exit(EXIT_FAILURE);
+    }
+  }
+
 
   /* This will ignore the Ctrl+Z behavior and it will call the ISR */
   signal(SIGTSTP, interruptServiceRoutine);
@@ -309,7 +334,17 @@ int main(void) {
 
     /* Attempt to destroy the missile */
     if (missile.status == INTERCEPTABLE + 1) {
-      int interceptionResult = fireMissileInterceptor();
+      int interceptionResult;
+      if (bitsOption == 0) {
+        // Default implementation
+        printf("normal implementation\n");
+        interceptionResult = fireMissileInterceptor();
+      } else {
+        // Alternative implementation
+        printf("-b implementation\n");
+        interceptionResult = extractDecisionBits();
+      }
+
       /* Reset the system */
       confirmInterception(interceptionResult, &missile);
     }
@@ -464,5 +499,24 @@ void confirmInterception(int interceptionResult, struct Missile *missile) {
   }
 }
 
-/* [] END OF FILE */
 
+// Implement the extractDecisionBits function
+int extractDecisionBits() {
+  printf("\ncurrently in extractDecisionBits\n");
+  // Extract the 4 bits at the center of the original number (the original string of 8 bits)
+  uint8_t randomResult = rand() % 2;
+  uint8_t extractedBits = (randomResult >> 2) & 0x0F;
+
+
+  printf("\nExtracedBits: %d", extractedBits);
+  // If the new number (4 bits number) is smaller or equal to 7, then the missile was intercepted
+  if (extractedBits <= 7) {
+    return 1;
+    printf("The new 4 bit number is smaller or equal to 7");
+  } else {
+    printf("The new 4 bit number is NOT smaller or equal to 7");
+    return 0;
+  }
+}
+
+/* [] END OF FILE */
