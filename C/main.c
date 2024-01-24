@@ -243,6 +243,13 @@
 #include <stdint.h>
 #include <signal.h>
 
+// Define a structure for the missile
+struct Missile {
+  int id;               // Unique identifier for the missile
+  int status;           // Status of the missile
+  int prevDistance;     // Previous distance of the missile
+  int currentDistance;  // Current distance of the missile
+};
 
 /* Interrupt Service Routine for the CTRL-Z signal */
 void interruptServiceRoutine(int s) {
@@ -259,16 +266,14 @@ void interruptServiceRoutine(int s) {
 }
 
 /* Declaring functions */
-int readProximitySensor(void);
+int readProximitySensor(struct Missile *missile);
 int determineMissileStatus(int distance);
 void setMissileIndicator(int missileStatus);
-int  fireMissileInterceptor();
+int fireMissileInterceptor();
 void confirmInterception(int interceptionResult);
-
 
 /* Main program */
 int main(void) {
-
   struct periodic_task *task;
 
   /* This will ignore the Ctrl+Z behavior and it will call the ISR */
@@ -282,22 +287,26 @@ int main(void) {
     printf("ERROR: Start periodic timer!\n");
   }
 
-  for (;;) {
+  // Create an instance of the Missile structure
+  struct Missile missile;
+  missile.id = 1;  // You can assign a unique identifier to the missile
 
+  for (;;) {
     /* Wait for the next activation */
     wait_next_periodic_activation(task);
 
     /* Read the measurement from the proximity sensor */
-    int distance = readProximitySensor();
+    missile.prevDistance = missile.currentDistance;  // Update previous distance
+    missile.currentDistance = readProximitySensor(&missile); // Read current distance
 
     // /* Update the status of the missile */
-    int missileStatus = determineMissileStatus(distance);
+    missile.status = determineMissileStatus(missile.currentDistance);
 
     /* Notify the user about the missile */
-    setMissileIndicator(missileStatus);
+    setMissileIndicator(missile.status);
 
     /* Attempt to destroy the missile */
-    if(missileStatus == INTERCEPTABLE + 1) { // for some reason the interceptable and all other states -1 in value, idk why but I can't figure it out rn
+    if (missile.status == INTERCEPTABLE + 1) {
       int interceptionResult = fireMissileInterceptor();
       /* Reset the system */
       confirmInterception(interceptionResult);
@@ -305,41 +314,23 @@ int main(void) {
   }
 
   /* Release the allocated memory */
-
   return 0;
-
 }
-
-/**
- ******************************************************
- *
- * IMPLEMENTATION
- * 
- * Please, implement your functions here.
- *
- * Attention: Under no circumstances, NEVER!!!, move this section to a
- * different part of the file. The missiles will hunting you down if you do so.
- *
- * Additionally, as mentioned before. DO NOT USE GLOBAL VARIABLES!
- *
- ******************************************************
- */
-
 
 /**
  * Function: readProximitySensor
  * ------------------------------
- * Asks the user to enter the distance of a missile for the promixity sensor.
- * The function continues to prompt until a valid integer within the allowed range (set by the define MAX_ALLOWED_DISTANCE is provided. 
- * It also handles invalid inputs by informing the user and clearing the input buffer. 
+ * Asks the user to enter the distance of a missile for the proximity sensor.
+ * The function continues to prompt until a valid integer within the allowed range
+ * (set by the define MAX_ALLOWED_DISTANCE) is provided. It also handles invalid inputs
+ * by informing the user and clearing the input buffer.
  *
+ * @param struct Missile *missile: Pointer to the Missile structure.
  * @return int: The valid distance entered by the user.
  */
-
-// The maximum distance threshold
 #define MAX_ALLOWED_DISTANCE 1000000
 
-int readProximitySensor(void) {
+int readProximitySensor(struct Missile *missile) {
   int missileDistance;
 
   do {
@@ -348,7 +339,7 @@ int readProximitySensor(void) {
 
     // Read the entered distance from the user
     if (scanf("%d", &missileDistance) != 1) {
-      // If the user fails to input a integer, let them know
+      // If the user fails to input an integer, let them know
       printf("Invalid input. Please provide a valid integer.\n");
       // Clear the input buffer
       while (getchar() != '\n');
@@ -358,6 +349,10 @@ int readProximitySensor(void) {
 
     if (missileDistance > MAX_ALLOWED_DISTANCE) {
       printf("Entered distance exceeds maximum allowed distance. Please input distance again.\n");
+    } else if (missile->currentDistance > 0 && missileDistance > missile->currentDistance) {
+      printf("Warning: The missile should be approaching, but the entered distance is greater than the current distance.\n");
+      printf("Try to input a lower distance.\n");
+      missileDistance = 0;
     }
   } while (missileDistance > MAX_ALLOWED_DISTANCE || missileDistance <= 0);
 
@@ -366,7 +361,6 @@ int readProximitySensor(void) {
 
   return missileDistance;
 }
-
 
 /**
  * Function: determineMissileStatus
@@ -383,7 +377,7 @@ int readProximitySensor(void) {
 #define DETECTABLE 2
 #define INTERCEPTABLE 3
 
-// Maximum distance for the missle to be interceptable and detectable
+// Maximum distance for the missile to be interceptable and detectable
 #define INTERCEPTABLE_THRESHOLD 100
 #define DETECTABLE_THRESHOLD 1000
 
@@ -397,7 +391,6 @@ int determineMissileStatus(int distance) {
   }
 }
 
-
 /**
  * Function: setMissileIndicator
  * ------------------------------
@@ -406,25 +399,23 @@ int determineMissileStatus(int distance) {
  *
  * @param int missileStatus: The status of the missile system (undetectable, detectable, interceptable).
  */
-
 #define FIRE_MISSILE 1
 
 void setMissileIndicator(int missileStatus) {
-    switch (missileStatus) {
-        case UNDETECTABLE:
-            printf("ALARM: Missile is undetectable. Activate anti-missile shield!\n");
-            break;
-        case DETECTABLE:
-            printf("ALARM: Missile is detectable. Prepare for interception!\n");
-            break;
-        case INTERCEPTABLE:
-            printf("ALARM: Missile is interceptable. Launch interception missiles!\n");
-            break;
-        default:
-            printf("ALARM: Unknown missile status. Take appropriate action!\n");
-    }
+  switch (missileStatus) {
+    case UNDETECTABLE:
+      printf("ALARM: Missile is undetectable. Activate anti-missile shield!\n");
+      break;
+    case DETECTABLE:
+      printf("ALARM: Missile is detectable. Prepare for interception!\n");
+      break;
+    case INTERCEPTABLE:
+      printf("ALARM: Missile is interceptable. Launch interception missiles!\n");
+      break;
+    default:
+      printf("ALARM: Unknown missile status. Take appropriate action!\n");
+  }
 }
-
 
 /**
  * Function: fireMissileInterceptor
@@ -457,10 +448,8 @@ int fireMissileInterceptor() {
 void confirmInterception(int interceptionResult) {
   if (interceptionResult) {
     printf("SUCCESS! The missile has been intercepted. Resetting the system.\n");
-    // Additional actions to reset the system can be added here.
-  } else {
-    printf("ALERT: The missile has not been intercepted. Fire the alarm for evacuation!\n");
-    // Additional actions for evacuation can be added here.
+    missile->prevDistance = 0;  // Set prevDistance to a suitable value
+    missile->currentDistance = 0;  // Set currentDistance to a suitable value
   }
 }
 
