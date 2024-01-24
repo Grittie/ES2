@@ -137,7 +137,8 @@
  *     Additionally, explain your solution here.
  *
  *       Explanation: I have added prints to the interruptServiceRoutine to showcase the urgancy of the situation and then I exit the program
- *                    by calling the exit(EXIT_FAILURE) function. 
+ *                    by calling the exit(EXIT_FAILURE) function. In the confirmInterception when the missile is not intercepted the program sends out the notification
+ *                    and tells the user to press CRTL-Z, the program has a while loop to wait for the user to terminate the program witha a usleep to avoid high CPU usage.
  *
  *
  *  8: Update the code to ensure that the sensor reading (the distance that you
@@ -242,6 +243,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <signal.h>
+#include <unistd.h>
 
 // Define a structure for the missile
 struct Missile {
@@ -270,7 +272,7 @@ int readProximitySensor(struct Missile *missile);
 int determineMissileStatus(int distance);
 void setMissileIndicator(int missileStatus);
 int fireMissileInterceptor();
-void confirmInterception(int interceptionResult);
+void confirmInterception(int interceptionResult, struct Missile *missile);
 
 /* Main program */
 int main(void) {
@@ -309,7 +311,7 @@ int main(void) {
     if (missile.status == INTERCEPTABLE + 1) {
       int interceptionResult = fireMissileInterceptor();
       /* Reset the system */
-      confirmInterception(interceptionResult);
+      confirmInterception(interceptionResult, &missile);
     }
   }
 
@@ -445,11 +447,19 @@ int fireMissileInterceptor() {
  * If the missile was successfully intercepted, reset the system.
  * If the missile was not intercepted, alert the user for evacuation.
  */
-void confirmInterception(int interceptionResult) {
-  if (interceptionResult) {
+void confirmInterception(int interceptionResult, struct Missile *missile) {
+    if (interceptionResult) {
     printf("SUCCESS! The missile has been intercepted. Resetting the system.\n");
     missile->prevDistance = 0;  // Set prevDistance to a suitable value
     missile->currentDistance = 0;  // Set currentDistance to a suitable value
+  } else{
+    printf("ALERT: Evacuate all residents of the city immediately!\n");
+    printf("Press CTRL-Z to trigger the evacuation alarm.\n");
+
+    while(1) {
+      // Sleep for a short duration to avoid high CPU usage in the loop
+      usleep(500000);
+    }
   }
 }
 
