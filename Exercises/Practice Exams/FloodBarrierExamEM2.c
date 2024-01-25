@@ -61,7 +61,7 @@
  *     If you are using the PSoC board, the wiring diagram must be completed
  *     in the top-design area of your project.
  *
- * 1D: If the water level has not changed, there is no need to do anything. 
+ * 1D: If the water level has not changed, there is no need to do w. 
  *     We might as well wait for a while until we check the water level
  *     again. Fill in the code in the main loop to let the program sleep for a
  *     while before we check the water level again. How long do you let the
