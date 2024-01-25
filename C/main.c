@@ -108,8 +108,8 @@
  *     proposed solution.
  *
  *       Explanation: for the fireMissileInterceptor() function I simply create a uint8_t variable called randomResult
- *                    that calls the rand() and modulos by 2 to either get a random 1 or 2 result. The result decided if
- *                    the missile is intercepted or not.
+ *                    that calls the srand() (we use srand() instead or rand() because rand() is not truly random and actually uses a seed) 
+ *                    and modulos by 2 to either get a random 1 or 2 result. The result decided if the missile is intercepted or not.
  *
  *
  *  6: In the cases in which the missile was successfully destroyed, then your
@@ -245,7 +245,7 @@
 #include <signal.h>
 #include <unistd.h>
 #include <getopt.h>
-
+#include <time.h>
 // Define a structure for the missile
 struct Missile {
   int id;               // Unique identifier for the missile
@@ -273,16 +273,18 @@ int readProximitySensor(struct Missile *missile);
 int determineMissileStatus(int distance);
 void setMissileIndicator(int missileStatus);
 int fireMissileInterceptor();
-void confirmInterception(int interceptionResult, struct Missile *missile);
+void confirmInterception(int interceptionResult, struct Missile *missile, int multipleOption);
 int extractDecisionBits();
 
-// Global variables to store command line arguments
-int bitsOption = 0;      // 0 for default implementation, 1 for alternative
-int multipleOption = 0;  // 0 for single missile, 1 for multiple missiles
+
 
 /* Main program */
 int main(int argc, char *argv[]) {
   struct periodic_task *task;
+
+  // Variables to toggle bits mode or multiple mode
+  int bitsOption = 0;
+  int multipleOption = 0;
 
   // Parse command line arguments
   int opt;
@@ -346,7 +348,7 @@ int main(int argc, char *argv[]) {
       }
 
       /* Reset the system */
-      confirmInterception(interceptionResult, &missile);
+      confirmInterception(interceptionResult, &missile, multipleOption);
     }
   }
 
@@ -461,10 +463,15 @@ void setMissileIndicator(int missileStatus) {
  * the missile has been intercepted based on a random process.
  * @return int: 1 if the missile was intercepted, 0 otherwise.
  */
+
 int fireMissileInterceptor() {
   printf("ALARM: FIRING INTERCEPTION MISSILES\n");
 
-  uint8_t randomResult = rand() % 2;
+  // Seed the random number generator with the current time
+  srandom(time(NULL));
+
+  // Generate a random number (0 or 1)
+  uint8_t randomResult = random() % 2;
 
   if (randomResult == 1) {
     printf("SUCCESS! THE MISSILE HAS BEEN INTERCEPTED!\n");
@@ -483,7 +490,7 @@ int fireMissileInterceptor() {
  * If the missile was not intercepted, alert the user for evacuation. 
  * and wait for the user to interupt the program.
  */
-void confirmInterception(int interceptionResult, struct Missile *missile) {
+void confirmInterception(int interceptionResult, struct Missile *missile, int multipleOption) {
     if (interceptionResult) {
     printf("SUCCESS! The missile has been intercepted. Resetting the system.\n");
     missile->prevDistance = 0;  // Set prevDistance to a suitable value
@@ -503,18 +510,22 @@ void confirmInterception(int interceptionResult, struct Missile *missile) {
 // Implement the extractDecisionBits function
 int extractDecisionBits() {
   printf("\ncurrently in extractDecisionBits\n");
+
+  // Seed the random number generator with the current time
+  srand(time(NULL));
+
   // Extract the 4 bits at the center of the original number (the original string of 8 bits)
-  uint8_t randomResult = rand() % 2;
+  uint8_t randomResult = rand() % 16;  // Fix: Use 16 to get a number between 0 and 15
   uint8_t extractedBits = (randomResult >> 2) & 0x0F;
 
+  printf("\nExtractedBits: %d", extractedBits);
 
-  printf("\nExtracedBits: %d", extractedBits);
   // If the new number (4 bits number) is smaller or equal to 7, then the missile was intercepted
   if (extractedBits <= 7) {
+    printf("\nThe new 4 bit number is smaller or equal to 7");
     return 1;
-    printf("The new 4 bit number is smaller or equal to 7");
   } else {
-    printf("The new 4 bit number is NOT smaller or equal to 7");
+    printf("\nThe new 4 bit number is NOT smaller or equal to 7");
     return 0;
   }
 }
