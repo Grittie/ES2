@@ -214,7 +214,7 @@
  *
  *
  * 13: Since now you are dealing with, possibly, multiple missils, your entire
- *     code must be updated to handle the array of missile structures. Be sure
+ *     code must be updated to handle the array of missile . Be sstructuresure
  *     that you update the code without breaking the already implemented
  *     functionality. The system must be tested to work while detecting only
  *     one missile but also when handling multiple ones.
@@ -247,12 +247,29 @@
 #include <getopt.h>
 #include <time.h>
 
-// Define a structure for the missile
+#define MAX_MISSILES 10  // Adjust the maximum number of missiles as needed
+#define MAX_DECREMENT 100
+#define MAX_ALLOWED_DISTANCE 10000
+#define MIN_ALOWED_DISTANCE 0
+
+// Define symbolic constants for missile status
+#define UNDETECTABLE 1
+#define DETECTABLE 2
+#define INTERCEPTABLE 3
+
+// Maximum distance for the missile to be interceptable and detectable
+#define INTERCEPTABLE_THRESHOLD 100
+#define DETECTABLE_THRESHOLD 1000
+
+#define FIRE_MISSILE 1
+
+
 struct Missile {
-  int id;               // Unique identifier for the missile
-  int status;           // Status of the missile
-  int prevDistance;     // Previous distance of the missile
-  int currentDistance;  // Current distance of the missile
+  int id[MAX_MISSILES];               // Unique identifier for the missile
+  int status[MAX_MISSILES];           // Status of the missile
+  int prevDistance[MAX_MISSILES];     // Previous distance of the missile
+  int currentDistance[MAX_MISSILES];  // Current distance of the missile
+  int maxMissiles;                    // Maximum number of missiles the system can handle
 };
 
 /* Interrupt Service Routine for the CTRL-Z signal */
@@ -270,20 +287,19 @@ void interruptServiceRoutine(int s) {
 }
 
 /* Declaring functions */
-int readProximitySensor(struct Missile *missile);
+int readProximitySensor(struct Missile *missile, int index);
 int determineMissileStatus(int distance);
 void setMissileIndicator(int missileStatus);
 int fireMissileInterceptor();
-void confirmInterception(int interceptionResult, struct Missile *missile, int multipleOption);
+void confirmInterception(int interceptionResult, struct Missile missiles[], int index, int multipleOption);
 int extractDecisionBits();
 
 
 
-/* Main program */
 int main(int argc, char *argv[]) {
   struct periodic_task *task;
 
-  // Variables to toggle bits mode or multiple mode
+  // Variables to toggle bits mode or multiple modes
   int bitsOption = 0;
   int multipleOption = 0;
 
@@ -293,10 +309,10 @@ int main(int argc, char *argv[]) {
     switch (opt) {
       case 'b':
         bitsOption = 1;
-        printf("b option has been selected");
+        printf("b option has been selected\n");
         break;
       case 'm':
-        printf("m option has been selected");
+        printf("m option has been selected\n");
         multipleOption = 1;
         break;
       default:
@@ -304,7 +320,6 @@ int main(int argc, char *argv[]) {
         exit(EXIT_FAILURE);
     }
   }
-
 
   /* This will ignore the Ctrl+Z behavior and it will call the ISR */
   signal(SIGTSTP, interruptServiceRoutine);
@@ -317,46 +332,130 @@ int main(int argc, char *argv[]) {
     printf("ERROR: Start periodic timer!\n");
   }
 
-  // Create an instance of the Missile structure
-  struct Missile missile;
-  missile.id = 1;  // You can assign a unique identifier to the missile
+  if (multipleOption) {
+    // Inside main function after parsing command line arguments
+    struct Missile missiles[MAX_MISSILES];
 
-  for (;;) {
-    /* Wait for the next activation */
-    wait_next_periodic_activation(task);
+    printf("Enter the maximum number of missiles the system can detect: ");
+    scanf("%d", &missiles[0].maxMissiles);
 
-    /* Read the measurement from the proximity sensor */
-    missile.prevDistance = missile.currentDistance;  // Update previous distance
-    missile.currentDistance = readProximitySensor(&missile); // Read current distance
+    if (missiles[0].maxMissiles <= 0 || missiles[0].maxMissiles > MAX_MISSILES) {
+      printf("Invalid input for the maximum number of missiles. Exiting.\n");
+      exit(EXIT_FAILURE);
+    }
 
-    // /* Update the status of the missile */
-    missile.status = determineMissileStatus(missile.currentDistance);
+    // Initialize missile data for multiple missiles
+    for (int i = 0; i < missiles[0].maxMissiles; ++i) {
+      missiles[i].id[i] = i + 1;  // Assign unique identifier
+      missiles[i].status[i] = UNDETECTABLE;  // Initial status
+      missiles[i].prevDistance[i] = 0;  // Initial previous distance
+      missiles[i].currentDistance[i] = 0;  // Initial current distance
+    }
 
-    /* Notify the user about the missile */
-    setMissileIndicator(missile.status);
+    for (;;) {
+      /* Wait for the next activation */
+      wait_next_periodic_activation(task);
 
-    /* Attempt to destroy the missile */
-    if (missile.status == INTERCEPTABLE + 1) {
-      int interceptionResult;
-      if (bitsOption == 0) {
-        // Default implementation
-        printf("normal implementation\n");
-        interceptionResult = fireMissileInterceptor();
-      } else {
-        // Alternative implementation
-        printf("-b implementation\n");
-        interceptionResult = extractDecisionBits();
+      // Inside a function where the 'missiles' array is defined and initialized
+      srand(time(NULL));  // Seed the random number generator
+
+      /* Update the distances for each missile */
+      for (int i = 0; i < missiles[0].maxMissiles; ++i) {
+        // Generate a random distance decrement for each missile
+        int decrement = rand() % (MAX_DECREMENT - 100 + 1) + 100;
+
+        if (i == 0) {
+            // First missile, generate a random distance without any constraints
+            missiles[i].currentDistance[i] = rand() % (MAX_ALLOWED_DISTANCE + 1);
+        } else {
+            // Subsequent missiles, ensure at least 100 less than the previous missile
+            int maxPossibleDistance = missiles[i - 1].currentDistance[i - 1] - 100;
+            missiles[i].currentDistance[i] = rand() % (maxPossibleDistance + 1);
+        }
+
+        // Update previous distance
+        missiles[i].prevDistance[i] = missiles[i].currentDistance[i];
+      }
+      
+      /* Print the distances for each missile */
+      printf("\nDistances for each missile:\n");
+      for (int i = 0; i < missiles[0].maxMissiles; ++i) {
+        printf("Missile %d: %d\n", missiles[i].id[i], missiles[i].currentDistance[i]);
       }
 
-      /* Reset the system */
-      confirmInterception(interceptionResult, &missile, multipleOption);
+      /* Update the status of each missile */
+      for (int i = 0; i < missiles[0].maxMissiles; ++i) {
+        missiles[i].status[i] = determineMissileStatus(missiles[i].currentDistance[i]);
+      }
+
+      /* Notify the user about each missile */
+      for (int i = 0; i < missiles[0].maxMissiles; ++i) {
+        setMissileIndicator(missiles[i].status[i]);
+      }
+
+      /* Attempt to destroy each missile */
+      for (int i = 0; i < missiles[0].maxMissiles; ++i) {
+        if (missiles[i].status[i] == INTERCEPTABLE) {
+          int interceptionResult;
+          if (bitsOption == 0) {
+            // Default implementation
+            printf("normal implementation\n");
+            interceptionResult = fireMissileInterceptor();
+          } else {
+            // Alternative implementation
+            printf("-b implementation\n");
+            interceptionResult = extractDecisionBits();
+          }
+
+          /* Reset the system */
+          confirmInterception(interceptionResult, missiles, i, multipleOption);
+        }
+      }
+      break;
+    }
+
+  } else {
+    // Original single missile implementation
+    struct Missile missile;
+    missile.maxMissiles = 1;  // Default to handling a single missile
+
+    for (;;) {
+      /* Wait for the next activation */
+      wait_next_periodic_activation(task);
+
+      /* Read the measurement from the proximity sensor */
+      missile.prevDistance[0] = missile.currentDistance[0];  // Update previous distance
+      missile.currentDistance[0] = readProximitySensor(&missile, 0); // Read current distance
+
+
+      /* Update the status of the missile */
+      missile.status[0] = determineMissileStatus(missile.currentDistance[0]);
+
+      /* Notify the user about the missile */
+      setMissileIndicator(missile.status[0]);
+
+      /* Attempt to destroy the missile */
+      if (missile.status[0] == INTERCEPTABLE) {
+        int interceptionResult;
+        if (bitsOption == 0) {
+          // Default implementation
+          printf("normal implementation\n");
+          interceptionResult = fireMissileInterceptor();
+        } else {
+          // Alternative implementation
+          printf("-b implementation\n");
+          interceptionResult = extractDecisionBits();
+        }
+
+        /* Reset the system */
+        confirmInterception(interceptionResult, &missile, 0, multipleOption);
+      }
     }
   }
 
   /* Release the allocated memory */
   return 0;
 }
-
 /**
  * Function: readProximitySensor
  * ------------------------------
@@ -368,14 +467,14 @@ int main(int argc, char *argv[]) {
  * @param struct Missile *missile: Pointer to the Missile structure.
  * @return int: The valid distance entered by the user.
  */
-#define MAX_ALLOWED_DISTANCE 1000000
 
-int readProximitySensor(struct Missile *missile) {
+
+int readProximitySensor(struct Missile *missile, int index) {
   int missileDistance;
 
   do {
     // Ask the user to enter the distance of the missile
-    printf("\nEnter distance of the missile: ");
+    printf("\nEnter distance of missile %d: ", index + 1);
 
     // Read the entered distance from the user
     if (scanf("%d", &missileDistance) != 1) {
@@ -388,8 +487,8 @@ int readProximitySensor(struct Missile *missile) {
     }
 
     if (missileDistance > MAX_ALLOWED_DISTANCE) {
-      printf("Entered distance exceeds maximum allowed distance. Please input distance again.\n");
-    } else if (missile->currentDistance > 0 && missileDistance > missile->currentDistance) {
+      printf("Entered distance exceeds the maximum allowed distance. Please input distance again.\n");
+    } else if (missile->currentDistance[index] > 0 && missileDistance > missile->currentDistance[index]) {
       printf("Warning: The missile should be approaching, but the entered distance is greater than the current distance.\n");
       printf("Try to input a lower distance.\n");
       missileDistance = 0;
@@ -397,10 +496,11 @@ int readProximitySensor(struct Missile *missile) {
   } while (missileDistance > MAX_ALLOWED_DISTANCE || missileDistance <= 0);
 
   // Print the entered distance
-  printf("\nDistance of the missile is: %d\n", missileDistance);
+  printf("\nDistance of missile %d is: %d\n", index + 1, missileDistance);
 
   return missileDistance;
 }
+
 
 /**
  * Function: determineMissileStatus
@@ -411,16 +511,6 @@ int readProximitySensor(struct Missile *missile) {
  * @param int distance: The distance of the missile from the proximity sensor.
  * @return int: The status of the missile (UNDETECTABLE, DETECTABLE, INTERCEPTABLE).
  */
-
-// Define symbolic constants for missile status
-#define UNDETECTABLE 1
-#define DETECTABLE 2
-#define INTERCEPTABLE 3
-
-// Maximum distance for the missile to be interceptable and detectable
-#define INTERCEPTABLE_THRESHOLD 100
-#define DETECTABLE_THRESHOLD 1000
-
 int determineMissileStatus(int distance) {
   if (distance > DETECTABLE_THRESHOLD) {
     return UNDETECTABLE;
@@ -439,8 +529,6 @@ int determineMissileStatus(int distance) {
  *
  * @param int missileStatus: The status of the missile system (undetectable, detectable, interceptable).
  */
-#define FIRE_MISSILE 1
-
 void setMissileIndicator(int missileStatus) {
   switch (missileStatus) {
     case UNDETECTABLE:
@@ -522,20 +610,19 @@ int extractDecisionBits() {
  * If the missile was not intercepted, alert the user for evacuation. 
  * and wait for the user to interupt the program.
  */
-void confirmInterception(int interceptionResult, struct Missile *missile, int multipleOption) {
-    if (interceptionResult) {
+void confirmInterception(int interceptionResult, struct Missile missiles[], int index, int multipleOption) {
+  if (interceptionResult) {
     printf("SUCCESS! The missile has been intercepted. Resetting the system.\n");
-    missile->prevDistance = 0;  // Set prevDistance to a suitable value
-    missile->currentDistance = 0;  // Set currentDistance to a suitable value
-  } else{
+    missiles[index].prevDistance[index] = 0;  // Set prevDistance to a suitable value
+    missiles[index].currentDistance[index] = 0;  // Set currentDistance to a suitable value
+  } else {
     printf("ALERT: Evacuate all residents of the city immediately!\n");
     printf("Press CTRL-Z to trigger the evacuation alarm.\n");
 
-    while(1) {
+    while (1) {
       // Sleep for a short duration to avoid high CPU usage in the loop
       usleep(500000);
     }
   }
 }
-
 /* [] END OF FILE */
