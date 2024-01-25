@@ -1,0 +1,12 @@
+{
+	"folders": [
+		{
+			"path": "../.."
+		},
+		{
+			"name": "flood_barrier",
+			"path": "flood_barrier"
+		}
+	],
+	"settings": {}
+}
