@@ -246,6 +246,7 @@
 #include <unistd.h>
 #include <getopt.h>
 #include <time.h>
+
 // Define a structure for the missile
 struct Missile {
   int id;               // Unique identifier for the missile
