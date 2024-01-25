@@ -483,6 +483,37 @@ int fireMissileInterceptor() {
 }
 
 /**
+ * Function: extractDecisionBits
+ * -----------------------------
+ * Simulates the extraction of 4 bits from a random 4-bit number, 
+ * representing the center bits of an 8-bit number. 
+ * The function then determines whether the extracted number is smaller
+ * or equal to 7, simulating the interception decision process.
+ * @return int: 1 if the simulated missile was intercepted, 0 otherwise.
+ */
+int extractDecisionBits() {
+  printf("\ncurrently in extractDecisionBits\n");
+
+  // Seed the random number generator with the current time
+  srand(time(NULL));
+
+  // Extract the 4 bits at the center of the original number (the original string of 8 bits)
+  uint8_t randomResult = rand() % 16;  // Fix: Use 16 to get a number between 0 and 15
+  uint8_t extractedBits = (randomResult >> 2) & 0x0F;
+
+  printf("\nExtractedBits: %d", extractedBits);
+
+  // If the new number (4 bits number) is smaller or equal to 7, then the missile was intercepted
+  if (extractedBits <= 7) {
+    printf("\nThe new 4 bit number is smaller or equal to 7");
+    return 1;
+  } else {
+    printf("\nThe new 4 bit number is NOT smaller or equal to 7");
+    return 0;
+  }
+}
+
+/**
  * Function: confirmInterception
  * ------------------------------
  * Confirms the interception result and takes appropriate actions.
@@ -503,30 +534,6 @@ void confirmInterception(int interceptionResult, struct Missile *missile, int mu
       // Sleep for a short duration to avoid high CPU usage in the loop
       usleep(500000);
     }
-  }
-}
-
-
-// Implement the extractDecisionBits function
-int extractDecisionBits() {
-  printf("\ncurrently in extractDecisionBits\n");
-
-  // Seed the random number generator with the current time
-  srand(time(NULL));
-
-  // Extract the 4 bits at the center of the original number (the original string of 8 bits)
-  uint8_t randomResult = rand() % 16;  // Fix: Use 16 to get a number between 0 and 15
-  uint8_t extractedBits = (randomResult >> 2) & 0x0F;
-
-  printf("\nExtractedBits: %d", extractedBits);
-
-  // If the new number (4 bits number) is smaller or equal to 7, then the missile was intercepted
-  if (extractedBits <= 7) {
-    printf("\nThe new 4 bit number is smaller or equal to 7");
-    return 1;
-  } else {
-    printf("\nThe new 4 bit number is NOT smaller or equal to 7");
-    return 0;
   }
 }
 
