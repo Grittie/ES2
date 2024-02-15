@@ -349,7 +349,7 @@ int main(int argc, char *argv[]) {
       missiles[i].id[i] = i + 1;  // Assign unique identifier
       missiles[i].status[i] = UNDETECTABLE;  // Initial status
       missiles[i].prevDistance[i] = 0;  // Initial previous distance
-      missiles[i].currentDistance[i] = 0;  // Initial current distance
+      missiles[i].currentDistance[i] = 0;  // Initial current distance(s)
     }
 
     for (;;) {
