@@ -91,7 +91,7 @@
  *     your system. Explain what and why did you choose to be part of your
  *     structure.
  *
- *         Explanation:
+ *         Explanation: I have created a struct with the waterLevel and BarrierStatus
  *
  *
  * 2D: Define a local variable, called barrier, to represent your system.
@@ -155,7 +155,7 @@
  *     are using PSoC) how you have connected your LED.
  *
  * 4B: Configure a PWM module and connect it to your LED. Explain the choices
- *     you have made for your PWM module:
+ *     you have made for your PWM module: I have created a define for a vTaskDelay with a fast and slow value for blinking the light
  *
  *       Fast blinking frequency and corresponding PWM duty cycle setting:
  *       Slow blinking frequency and corresponding PWM duty cycle setting:
@@ -217,47 +217,43 @@
  *
  *
  ***********************************************************************************/
-
+#include <stdio.h>
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+#include "driver/gpio.h"
+#include "driver/adc.h"
 
 #define MAX_HEIGHT 1.5
+#define MEDIUM_HEIGHT 0.5
+#define HIGH_HEIGHT 1.0
+#define LED_PIN 13
+#define LED_FAST 0.1
+#define LED_SLOW 1.0
 
-/* TODO: Exercise 3D
- * Define two macros to differentiate the water levels.
- */
+typedef enum {
+    LOW,
+    MEDIUM,
+    HIGH
+} WaterLevel;
 
+typedef enum {
+    DOWN,
+    RISING_SLOW,
+    RISING_FAST
+} BarrierStatus;
 
-/* TODO: Exercise 2A
- * Declare en enumeration (using typedef) to handle the water levels.
- * Beware, this is an enumeration NOT a variable.
- */
-
-
-/* TODO: Exercise 2B
- * Declare en enumeration (using typedef) to handle the status of the barrier.
- * Beware, this is an enumeration NOT a variable.
- */
-
-
-/* TODO: Exercise 2C
- * Declare an structure called flood_barrier_t (using typedef) to represent
- * your system. Beware, this is a structure NOT a variable.
- */
-
+typedef struct {
+    WaterLevel waterLevel;
+    BarrierStatus barrierStatus;
+} flood_barrier_t;
 
 void app_main() {
 
-  /* TODO: Exercise 2D
-   * Define a variable called: barrier, with data type: flood_barrier_t, to
-   * represent your system. Initialize its information as you wish.
-   */
+  flood_barrier_t barrier;
+  barrier.waterLevel = LOW;
+  barrier.barrierStatus = DOWN;
 
-
-  /* TODO: Exercise 2E
-   * Define a variable called: cur_water_level, with data type: Exercise 2A, to
-   * represent the current water level of the city. Initialize its information
-   * as you wish.
-   */
-
+  WaterLevel cur_water_level = LOW;
   
   /* Initialize/Startup your components */
   initComponents();
@@ -267,33 +263,23 @@ void app_main() {
     /* Obtain the current water level */
     cur_water_level = obtainWaterLevel();
 
-    /* TODO: Exercise 3F
-     * Establish the comparison between the water levels: the one stored on the
-     * system and the current water level.
-     */
-    if (cur_water_level != ) {
+    if (cur_water_level != barrier.waterLevel) {
 
       /* TODO: Exercise 4E
        * Complete the function calling according to the function's signature.
        */
-      setBarrierStatus(cur_water_level, );
-      setBarrierIndicator();
 
-      /* TODO: Exercise 3G
-       * Update the current water level in the system.
-       */
-       = cur_water_level;
+      barrier = (cur_water_level, barrier);
+      setBarrierStatus(&barrier);
+      setBarrierIndicator();
+      
+      barrier.waterLevel = cur_water_level;
 
     }
 
     /* The water level has not changed, sleep for a while */
     else { 
-
-      /* TODO: Exercise 1D
-       * Let the program sleep for a while.
-       */
-      
-
+      vTaskDelay(5000 / portTICK_PERIOD_MS);
     }
 
   }
@@ -320,25 +306,20 @@ void app_main() {
 void initComponents(void) {
 
   /* Put here the initialization code of your components */
-
+  adc1_config_width(ADC_WIDTH_BIT_12);
+  adc1_config_channel_atten(ADC1_CHANNEL_3, ADC_ATTEN_DB_11);
+  gpio_set_direction(LED_PIN, GPIO_MODE_OUTPUT);
 }
 
 
-readWaterSensor() {
-
-  /* Temporary initialization for debugging purposes */
-  int sensor_reading = 0;
-
-  /* TODO: Exercise 3B
-   * Fill in the code for this function to simulate the sensing of the water
-   * level by reading the resistor value.
-   */
-
-
+int readWaterSensor() {
+  int sensor_reading = adc1_get_raw(ADC1_CHANNEL_3);
   return sensor_reading;
-
 }
 
+// values for potentiometer
+#define ADC_MAX_VALUE 4095  // Maximum ADC reading for 12-bit resolution
+#define MAX_HEIGHT 1.5
 
 convertReadingIntoHeight() {
 
@@ -347,55 +328,63 @@ convertReadingIntoHeight() {
 
   int sensor_reading = readWaterSensor();
 
-  /* TODO: Exercise 3C
-   * Fill in the code for this function to convert the reading from the
-   * potentiometer into a water level (height) value between 0.0 and 1.5 meter.
-   */
+  // Map the ADC reading to the range [0.0, 1.0]
+  float normalized_reading = (float)sensor_reading / ADC_MAX_VALUE;
 
+  // Map the normalized reading to the desired height range [0.0, 1.5]
+  float height = normalized_reading * MAX_HEIGHT;
 
   return height;
-
 }
 
 
 obtainWaterLevel() {
-
-  /* Temporary initialization for debugging purposes */
-  level = LEVEL_MEDIUM;
+  WaterLevel level = LOW;
 
   float height = convertReadingIntoHeight();
 
-  /* TODO: Exercise 3D
-   * Fill in the code for this function to determine the current water level
-   * according to the measured height.
-   */
-
+  if (height < MEDIUM_HEIGHT)
+  {
+    level = LOW;
+  } else if (height < HIGH_HEIGHT) 
+  {
+    level = MEDIUM;
+  } else 
+  {
+    level = HIGH;
+  }
 
   return level;
-
 }
 
 setBarrierStatus(cur_water_level, flood_barrier_t *barrier) {
-
-  /* TODO: Exercise 4C
-   * Write the code for this function to setup the proper barrier behavior
-   * depending on the measured water level.
-   */
-
-
+  if (cur_water_level == LOW)
+  {
+    barrier->barrierStatus = DOWN;
+  } else if(cur_water_level == MEDIUM)
+  {
+    barrier->BarrierStatus = RISING_SLOW;
+  } else {
+    barrier->BarrierStatus = RISING_FAST;
+  }
+  
 }
 
 setBarrierIndicator(flood_barrier_t *barrier) {
-
-  /* TODO: Exercise 4D
-   * Write the code for this function to light up the barrier led indicating
-   * its behavior as follows:
-   *   LED STAYS ON:    Barrier stays in low position.
-   *   LED BLINKS SLOW: Barrier is raising slow.
-   *   LED BLINKS FAST: Barrier is raising fast.
-   */
-  
-
+  if (barrier->barrierStatus == DOWN) {
+    gpio_set_level(LED_PIN, 1);
+  } else if(barrier->barrierStatus == RISING_SLOW)
+  {
+    gpio_set_level(LED_PIN, 0);
+    vTaskDelay(LED_SLOW / portTICK_PERIOD_MS);
+    gpio_set_level(LED_PIN, 1);
+    vTaskDelay(LED_SLOW / portTICK_PERIOD_MS);
+  } else {
+    gpio_set_level(LED_PIN, 0);
+    vTaskDelay(LED_FAST / portTICK_PERIOD_MS);
+    gpio_set_level(LED_PIN, 1);
+    vTaskDelay(LED_FAST / portTICK_PERIOD_MS);
+  }
 }
 
 

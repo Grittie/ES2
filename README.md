@@ -14,6 +14,11 @@ This section focuses on simulating the behavior of an anti-missiles shield opera
 
 This project demonstrates the basic functionality of a toy car using the ESP32 microcontroller. Components include a light-dependent resistor (LDR), DIP switch, DC motor, L293D motor driver, potentiometer, I2C SSD1306 OLED display, Hall effect sensor, cube magnet, buzzer, auxiliary LEDs, and auxiliary push buttons.
 
+
+## Exam
+
+This directory contains the final theory and practical exam for Embedded Systems 2, this exam has been taken and can not be given again therefor it is okay to have this publicly on the github.
+
 ## Exercises
 
-This directory contains exercises discussed during the classes, covering various topics such as pointers, structs, and other essential concepts in embedded systems.
+This directory contains exercises discussed during the classes, covering various topics such as pointers, structs, and other essential concepts in embedded systems. It also includes practice exams.
